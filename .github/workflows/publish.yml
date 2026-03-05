@@ -1,8 +1,8 @@
 name: Publish
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -13,6 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify tag matches Cargo.toml version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          CARGO_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml)
+          if [ "$TAG" != "$CARGO_VERSION" ]; then
+            echo "::error::Tag v$TAG does not match Cargo.toml version $CARGO_VERSION"
+            exit 1
+          fi
+          echo "Version $CARGO_VERSION confirmed"
+
       - run: cargo fmt --check
       - run: cargo clippy -- -D warnings
       - run: cargo test
