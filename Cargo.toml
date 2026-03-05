@@ -1,0 +1,24 @@
+[package]
+name = "jscan"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance zero-allocation JSON iterator and validator. Port of github.com/romshark/jscan/v2."
+license = "MIT"
+repository = "https://github.com/nicmr/jscan-rs" # TODO: update with actual repo URL
+readme = "README.md"
+keywords = ["json", "parser", "validator", "scanner", "no-std"]
+categories = ["parser-implementations", "no-std", "encoding"]
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+flate2 = "1"
+
+[[bench]]
+name = "bench"
+harness = false
