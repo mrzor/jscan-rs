@@ -1,4 +1,4 @@
-use jscan::{scan, scan_one, valid, ValueType, Parser, Validator, ErrorCode};
+use jscan::{scan, scan_one, valid, ErrorCode, Parser, Validator, ValueType};
 
 #[derive(Debug, Clone)]
 struct Record {
@@ -12,10 +12,21 @@ struct Record {
 
 impl Record {
     fn new(
-        vt: ValueType, level: usize, key: &'static str, value: &'static str,
-        ai: isize, pointer: &'static str,
+        vt: ValueType,
+        level: usize,
+        key: &'static str,
+        value: &'static str,
+        ai: isize,
+        pointer: &'static str,
     ) -> Self {
-        Self { level, value_type: vt, key, value, array_index: ai, pointer }
+        Self {
+            level,
+            value_type: vt,
+            key,
+            value,
+            array_index: ai,
+            pointer,
+        }
     }
 }
 
@@ -34,27 +45,52 @@ fn run_scan_test(name: &str, input: &[u8], expected: &[Record]) {
             panic!("{}: unexpected extra value at index {}", name, j);
         }
         let e = &expected[j];
-        assert_eq!(e.value_type, iter.value_type(), "{}: ValueType at {}", name, j);
+        assert_eq!(
+            e.value_type,
+            iter.value_type(),
+            "{}: ValueType at {}",
+            name,
+            j
+        );
         assert_eq!(e.level, iter.level(), "{}: Level at {}", name, j);
         let val = std::str::from_utf8(iter.value()).unwrap_or("");
         assert_eq!(e.value, val, "{}: Value at {}", name, j);
         let key = std::str::from_utf8(iter.key()).unwrap_or("");
         assert_eq!(e.key, key, "{}: Key at {}", name, j);
-        assert_eq!(e.array_index, iter.array_index(), "{}: ArrayIndex at {}", name, j);
+        assert_eq!(
+            e.array_index,
+            iter.array_index(),
+            "{}: ArrayIndex at {}",
+            name,
+            j
+        );
         let ptr = iter.pointer();
         assert_eq!(e.pointer, ptr, "{}: Pointer at {}", name, j);
         j += 1;
         false
     });
     assert!(err.is_none(), "{}: scan error: {:?}", name, err);
-    assert_eq!(j, expected.len(), "{}: expected {} records, got {}", name, expected.len(), j);
+    assert_eq!(
+        j,
+        expected.len(),
+        "{}: expected {} records, got {}",
+        name,
+        expected.len(),
+        j
+    );
 
     // Parser::scan
     let mut p = Parser::new(64);
     j = 0;
     let err = p.scan(input, |iter| {
         let e = &expected[j];
-        assert_eq!(e.value_type, iter.value_type(), "{}: Parser ValueType at {}", name, j);
+        assert_eq!(
+            e.value_type,
+            iter.value_type(),
+            "{}: Parser ValueType at {}",
+            name,
+            j
+        );
         assert_eq!(e.level, iter.level(), "{}: Parser Level at {}", name, j);
         j += 1;
         false
@@ -64,96 +100,131 @@ fn run_scan_test(name: &str, input: &[u8], expected: &[Record]) {
 
 #[test]
 fn scan_null() {
-    run_scan_test("null", b"null", &[
-        Record::new(ValueType::Null, 0, "", "null", -1, ""),
-    ]);
+    run_scan_test(
+        "null",
+        b"null",
+        &[Record::new(ValueType::Null, 0, "", "null", -1, "")],
+    );
 }
 
 #[test]
 fn scan_bool_true() {
-    run_scan_test("bool_true", b"true", &[
-        Record::new(ValueType::True, 0, "", "true", -1, ""),
-    ]);
+    run_scan_test(
+        "bool_true",
+        b"true",
+        &[Record::new(ValueType::True, 0, "", "true", -1, "")],
+    );
 }
 
 #[test]
 fn scan_bool_false() {
-    run_scan_test("bool_false", b"false", &[
-        Record::new(ValueType::False, 0, "", "false", -1, ""),
-    ]);
+    run_scan_test(
+        "bool_false",
+        b"false",
+        &[Record::new(ValueType::False, 0, "", "false", -1, "")],
+    );
 }
 
 #[test]
 fn scan_number_int() {
-    run_scan_test("number_int", b"42", &[
-        Record::new(ValueType::Number, 0, "", "42", -1, ""),
-    ]);
+    run_scan_test(
+        "number_int",
+        b"42",
+        &[Record::new(ValueType::Number, 0, "", "42", -1, "")],
+    );
 }
 
 #[test]
 fn scan_number_decimal() {
-    run_scan_test("number_decimal", b"42.5", &[
-        Record::new(ValueType::Number, 0, "", "42.5", -1, ""),
-    ]);
+    run_scan_test(
+        "number_decimal",
+        b"42.5",
+        &[Record::new(ValueType::Number, 0, "", "42.5", -1, "")],
+    );
 }
 
 #[test]
 fn scan_number_negative() {
-    run_scan_test("number_negative", b"-42.5", &[
-        Record::new(ValueType::Number, 0, "", "-42.5", -1, ""),
-    ]);
+    run_scan_test(
+        "number_negative",
+        b"-42.5",
+        &[Record::new(ValueType::Number, 0, "", "-42.5", -1, "")],
+    );
 }
 
 #[test]
 fn scan_number_exponent() {
-    run_scan_test("number_exponent", b"2.99792458e8", &[
-        Record::new(ValueType::Number, 0, "", "2.99792458e8", -1, ""),
-    ]);
+    run_scan_test(
+        "number_exponent",
+        b"2.99792458e8",
+        &[Record::new(
+            ValueType::Number,
+            0,
+            "",
+            "2.99792458e8",
+            -1,
+            "",
+        )],
+    );
 }
 
 #[test]
 fn scan_string() {
-    run_scan_test("string", br#""42""#, &[
-        Record::new(ValueType::String, 0, "", r#""42""#, -1, ""),
-    ]);
+    run_scan_test(
+        "string",
+        br#""42""#,
+        &[Record::new(ValueType::String, 0, "", r#""42""#, -1, "")],
+    );
 }
 
 #[test]
 fn scan_empty_array() {
-    run_scan_test("empty_array", b"[]", &[
-        Record::new(ValueType::Array, 0, "", "", -1, ""),
-    ]);
+    run_scan_test(
+        "empty_array",
+        b"[]",
+        &[Record::new(ValueType::Array, 0, "", "", -1, "")],
+    );
 }
 
 #[test]
 fn scan_empty_object() {
-    run_scan_test("empty_object", b"{}", &[
-        Record::new(ValueType::Object, 0, "", "", -1, ""),
-    ]);
+    run_scan_test(
+        "empty_object",
+        b"{}",
+        &[Record::new(ValueType::Object, 0, "", "", -1, "")],
+    );
 }
 
 #[test]
 fn scan_nested_array() {
-    run_scan_test("nested_array", br#"[[null,[{"key":true}]],[]]"#, &[
-        Record::new(ValueType::Array,  0, "",       "",     -1, ""),
-        Record::new(ValueType::Array,  1, "",       "",      0, "/0"),
-        Record::new(ValueType::Null,   2, "",       "null",  0, "/0/0"),
-        Record::new(ValueType::Array,  2, "",       "",      1, "/0/1"),
-        Record::new(ValueType::Object, 3, "",       "",      0, "/0/1/0"),
-        Record::new(ValueType::True,   4, r#""key""#, "true", -1, "/0/1/0/key"),
-        Record::new(ValueType::Array,  1, "",       "",      1, "/1"),
-    ]);
+    run_scan_test(
+        "nested_array",
+        br#"[[null,[{"key":true}]],[]]"#,
+        &[
+            Record::new(ValueType::Array, 0, "", "", -1, ""),
+            Record::new(ValueType::Array, 1, "", "", 0, "/0"),
+            Record::new(ValueType::Null, 2, "", "null", 0, "/0/0"),
+            Record::new(ValueType::Array, 2, "", "", 1, "/0/1"),
+            Record::new(ValueType::Object, 3, "", "", 0, "/0/1/0"),
+            Record::new(ValueType::True, 4, r#""key""#, "true", -1, "/0/1/0/key"),
+            Record::new(ValueType::Array, 1, "", "", 1, "/1"),
+        ],
+    );
 }
 
 #[test]
 fn scan_escaped_pointer() {
-    run_scan_test("escaped_pointer", br#"{"/":[{"~":null},0]}"#, &[
-        Record::new(ValueType::Object, 0, "",       "",     -1, ""),
-        Record::new(ValueType::Array,  1, r#""/""#, "",     -1, "/~1"),
-        Record::new(ValueType::Object, 2, "",       "",      0, "/~1/0"),
-        Record::new(ValueType::Null,   3, r#""~""#, "null", -1, "/~1/0/~0"),
-        Record::new(ValueType::Number, 2, "",       "0",     1, "/~1/1"),
-    ]);
+    run_scan_test(
+        "escaped_pointer",
+        br#"{"/":[{"~":null},0]}"#,
+        &[
+            Record::new(ValueType::Object, 0, "", "", -1, ""),
+            Record::new(ValueType::Array, 1, r#""/""#, "", -1, "/~1"),
+            Record::new(ValueType::Object, 2, "", "", 0, "/~1/0"),
+            Record::new(ValueType::Null, 3, r#""~""#, "null", -1, "/~1/0/~0"),
+            Record::new(ValueType::Number, 2, "", "0", 1, "/~1/1"),
+        ],
+    );
 }
 
 #[test]
@@ -180,30 +251,34 @@ fn scan_nested_object() {
         "a3": [ 0, {"a3": 8} ]
     }"#;
 
-    run_scan_test("nested_object", input, &[
-        Record::new(ValueType::Object, 0, "",        "",          -1, ""),
-        Record::new(ValueType::String, 1, r#""s""#,  r#""value""#, -1, "/s"),
-        Record::new(ValueType::True,   1, r#""t""#,  "true",      -1, "/t"),
-        Record::new(ValueType::False,  1, r#""f""#,  "false",     -1, "/f"),
-        Record::new(ValueType::Null,   1, r#""0""#,  "null",      -1, "/0"),
-        Record::new(ValueType::Number, 1, r#""n""#,  "-9.123e3",  -1, "/n"),
-        Record::new(ValueType::Object, 1, r#""o0""#, "",          -1, "/o0"),
-        Record::new(ValueType::Array,  1, r#""a0""#, "",          -1, "/a0"),
-        Record::new(ValueType::Object, 1, r#""o""#,  "",          -1, "/o"),
-        Record::new(ValueType::String, 2, r#""k""#,  r#""\"v\"""#, -1, "/o/k"),
-        Record::new(ValueType::Array,  2, r#""a""#,  "",          -1, "/o/a"),
-        Record::new(ValueType::True,   3, "",        "true",       0, "/o/a/0"),
-        Record::new(ValueType::False,  3, "",        "false",      1, "/o/a/1"),
-        Record::new(ValueType::Null,   3, "",        "null",       2, "/o/a/2"),
-        Record::new(ValueType::String, 3, "",        r#""item""#,  3, "/o/a/3"),
-        Record::new(ValueType::Number, 3, "",        "-67.02e9",   4, "/o/a/4"),
-        Record::new(ValueType::Array,  3, "",        "",           5, "/o/a/5"),
-        Record::new(ValueType::String, 4, "",        r#""foo""#,   0, "/o/a/5/0"),
-        Record::new(ValueType::Array,  1, r#""a3""#, "",          -1, "/a3"),
-        Record::new(ValueType::Number, 2, "",        "0",          0, "/a3/0"),
-        Record::new(ValueType::Object, 2, "",        "",           1, "/a3/1"),
-        Record::new(ValueType::Number, 3, r#""a3""#, "8",         -1, "/a3/1/a3"),
-    ]);
+    run_scan_test(
+        "nested_object",
+        input,
+        &[
+            Record::new(ValueType::Object, 0, "", "", -1, ""),
+            Record::new(ValueType::String, 1, r#""s""#, r#""value""#, -1, "/s"),
+            Record::new(ValueType::True, 1, r#""t""#, "true", -1, "/t"),
+            Record::new(ValueType::False, 1, r#""f""#, "false", -1, "/f"),
+            Record::new(ValueType::Null, 1, r#""0""#, "null", -1, "/0"),
+            Record::new(ValueType::Number, 1, r#""n""#, "-9.123e3", -1, "/n"),
+            Record::new(ValueType::Object, 1, r#""o0""#, "", -1, "/o0"),
+            Record::new(ValueType::Array, 1, r#""a0""#, "", -1, "/a0"),
+            Record::new(ValueType::Object, 1, r#""o""#, "", -1, "/o"),
+            Record::new(ValueType::String, 2, r#""k""#, r#""\"v\"""#, -1, "/o/k"),
+            Record::new(ValueType::Array, 2, r#""a""#, "", -1, "/o/a"),
+            Record::new(ValueType::True, 3, "", "true", 0, "/o/a/0"),
+            Record::new(ValueType::False, 3, "", "false", 1, "/o/a/1"),
+            Record::new(ValueType::Null, 3, "", "null", 2, "/o/a/2"),
+            Record::new(ValueType::String, 3, "", r#""item""#, 3, "/o/a/3"),
+            Record::new(ValueType::Number, 3, "", "-67.02e9", 4, "/o/a/4"),
+            Record::new(ValueType::Array, 3, "", "", 5, "/o/a/5"),
+            Record::new(ValueType::String, 4, "", r#""foo""#, 0, "/o/a/5/0"),
+            Record::new(ValueType::Array, 1, r#""a3""#, "", -1, "/a3"),
+            Record::new(ValueType::Number, 2, "", "0", 0, "/a3/0"),
+            Record::new(ValueType::Object, 2, "", "", 1, "/a3/1"),
+            Record::new(ValueType::Number, 3, r#""a3""#, "8", -1, "/a3/1/a3"),
+        ],
+    );
 }
 
 #[test]
@@ -214,9 +289,11 @@ fn scan_trailing_whitespace() {
         ("trailing_tab", "null\t"),
         ("trailing_lf", "null\n"),
     ] {
-        run_scan_test(name, input.as_bytes(), &[
-            Record::new(ValueType::Null, 0, "", "null", -1, ""),
-        ]);
+        run_scan_test(
+            name,
+            input.as_bytes(),
+            &[Record::new(ValueType::Null, 0, "", "null", -1, "")],
+        );
     }
 }
 
@@ -226,20 +303,32 @@ fn assert_scan_error(name: &str, input: &[u8], expected_code: ErrorCode, expecte
     assert!(!valid(input), "{}: valid() should reject", name);
 
     let mut v = Validator::new(64);
-    assert!(!v.valid(input), "{}: Validator::valid() should reject", name);
+    assert!(
+        !v.valid(input),
+        "{}: Validator::valid() should reject",
+        name
+    );
 
     let err = scan(input, |_| false);
     assert!(err.is_some(), "{}: scan should error", name);
     let e = err.unwrap();
     assert_eq!(e.code, expected_code, "{}: wrong error code", name);
-    assert_eq!(e.index, expected_index, "{}: wrong error index (got {}, want {})", name, e.index, expected_index);
+    assert_eq!(
+        e.index, expected_index,
+        "{}: wrong error index (got {}, want {})",
+        name, e.index, expected_index
+    );
 
     let mut p = Parser::new(64);
     let err = p.scan(input, |_| false);
     assert!(err.is_some(), "{}: Parser::scan should error", name);
     let e = err.unwrap();
     assert_eq!(e.code, expected_code, "{}: Parser wrong error code", name);
-    assert_eq!(e.index, expected_index, "{}: Parser wrong error index", name);
+    assert_eq!(
+        e.index, expected_index,
+        "{}: Parser wrong error index",
+        name
+    );
 }
 
 #[test]
@@ -354,14 +443,28 @@ fn error_control_characters_in_string() {
         input.push(0x00); // control char
         input.extend_from_slice(b"1234567812345678\"");
 
-        assert!(!valid(&input), "ctrl char at offset {} should be invalid", offset);
+        assert!(
+            !valid(&input),
+            "ctrl char at offset {} should be invalid",
+            offset
+        );
         let err = scan(&input, |_| false);
         assert!(err.is_some(), "ctrl char at offset {} should error", offset);
         let e = err.unwrap();
-        assert_eq!(e.code, ErrorCode::IllegalControlChar,
-            "ctrl char at offset {}: wrong code", offset);
-        assert_eq!(e.index, offset + 1,
-            "ctrl char at offset {}: wrong index (got {}, want {})", offset, e.index, offset + 1);
+        assert_eq!(
+            e.code,
+            ErrorCode::IllegalControlChar,
+            "ctrl char at offset {}: wrong code",
+            offset
+        );
+        assert_eq!(
+            e.index,
+            offset + 1,
+            "ctrl char at offset {}: wrong index (got {}, want {})",
+            offset,
+            e.index,
+            offset + 1
+        );
     }
 }
 
@@ -376,7 +479,11 @@ fn error_control_characters_in_fieldname() {
         input.push(0x00);
         input.extend_from_slice(b"\":\"1234567812345678\"}");
 
-        assert!(!valid(&input), "fieldname ctrl char at offset {} should be invalid", offset);
+        assert!(
+            !valid(&input),
+            "fieldname ctrl char at offset {} should be invalid",
+            offset
+        );
         let err = scan(&input, |_| false);
         assert!(err.is_some());
         let e = err.unwrap();
@@ -398,7 +505,9 @@ fn error_control_chars_various_positions() {
         assert!(!valid(&input), "ctrl 0x{:02x} before key", c);
 
         // After value
-        let input = [b'[', b'n', b'u', b'l', b'l', c, b',', b'n', b'u', b'l', b'l', b']'];
+        let input = [
+            b'[', b'n', b'u', b'l', b'l', c, b',', b'n', b'u', b'l', b'l', b']',
+        ];
         assert!(!valid(&input), "ctrl 0x{:02x} after value", c);
     }
 }

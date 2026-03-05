@@ -1,7 +1,7 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use crate::error::{Error, ErrorCode, error_index};
+use crate::error::{error_index, Error, ErrorCode};
 use crate::jsonnum::{self, NumberResult};
 use crate::keyescape;
 use crate::strfind;
@@ -127,12 +127,17 @@ impl<'a> Iterator<'a> {
         for node in &self.stack {
             if node.key_index >= 0 {
                 buf.push(b'/');
-                let key = &self.src[(node.key_index + 1) as usize..(node.key_index_end - 1) as usize];
+                let key =
+                    &self.src[(node.key_index + 1) as usize..(node.key_index_end - 1) as usize];
                 keyescape::append_escaped(buf, key);
             }
             if node.node_type as u8 == StackNodeType::Array as u8 {
                 buf.push(b'/');
-                let idx = if node.arr_len > 0 { node.arr_len - 1 } else { 0 };
+                let idx = if node.arr_len > 0 {
+                    node.arr_len - 1
+                } else {
+                    0
+                };
                 buf.extend_from_slice(idx.to_string().as_bytes());
             }
         }
@@ -190,21 +195,23 @@ impl Parser {
     }
 
     /// Scan `s` as exactly one complete JSON value, calling `f` for each encountered value.
-    pub fn scan<'a>(
-        &mut self,
-        s: &'a [u8],
-        f: impl FnMut(&Iterator<'a>) -> bool,
-    ) -> Option<Error> {
+    pub fn scan<'a>(&mut self, s: &'a [u8], f: impl FnMut(&Iterator<'a>) -> bool) -> Option<Error> {
         let (trailing, err) = self.scan_one(s, f);
         if let Some(e) = err {
             return Some(e);
         }
         let (trailing, ctrl) = strfind::end_of_whitespace_seq(trailing);
         if ctrl {
-            return Some(Error::new(ErrorCode::IllegalControlChar, error_index(s.len(), trailing.len())));
+            return Some(Error::new(
+                ErrorCode::IllegalControlChar,
+                error_index(s.len(), trailing.len()),
+            ));
         }
         if !trailing.is_empty() {
-            return Some(Error::new(ErrorCode::UnexpectedToken, error_index(s.len(), trailing.len())));
+            return Some(Error::new(
+                ErrorCode::UnexpectedToken,
+                error_index(s.len(), trailing.len()),
+            ));
         }
         None
     }
@@ -218,10 +225,7 @@ impl Default for Parser {
 
 /// Scan `s` as one complete JSON value, calling `f` for each encountered value.
 /// Returns `None` on success, or `Some(Error)` on failure.
-pub fn scan<'a>(
-    s: &'a [u8],
-    f: impl FnMut(&Iterator<'a>) -> bool,
-) -> Option<Error> {
+pub fn scan<'a>(s: &'a [u8], f: impl FnMut(&Iterator<'a>) -> bool) -> Option<Error> {
     Parser::default().scan(s, f)
 }
 
@@ -262,14 +266,28 @@ const LUT_ESCAPE: [u8; 256] = {
 
 const LUT_HEX: [u8; 256] = {
     let mut t = [0u8; 256];
-    t[b'0' as usize] = 1; t[b'1' as usize] = 1; t[b'2' as usize] = 1;
-    t[b'3' as usize] = 1; t[b'4' as usize] = 1; t[b'5' as usize] = 1;
-    t[b'6' as usize] = 1; t[b'7' as usize] = 1; t[b'8' as usize] = 1;
+    t[b'0' as usize] = 1;
+    t[b'1' as usize] = 1;
+    t[b'2' as usize] = 1;
+    t[b'3' as usize] = 1;
+    t[b'4' as usize] = 1;
+    t[b'5' as usize] = 1;
+    t[b'6' as usize] = 1;
+    t[b'7' as usize] = 1;
+    t[b'8' as usize] = 1;
     t[b'9' as usize] = 1;
-    t[b'a' as usize] = 1; t[b'b' as usize] = 1; t[b'c' as usize] = 1;
-    t[b'd' as usize] = 1; t[b'e' as usize] = 1; t[b'f' as usize] = 1;
-    t[b'A' as usize] = 1; t[b'B' as usize] = 1; t[b'C' as usize] = 1;
-    t[b'D' as usize] = 1; t[b'E' as usize] = 1; t[b'F' as usize] = 1;
+    t[b'a' as usize] = 1;
+    t[b'b' as usize] = 1;
+    t[b'c' as usize] = 1;
+    t[b'd' as usize] = 1;
+    t[b'e' as usize] = 1;
+    t[b'f' as usize] = 1;
+    t[b'A' as usize] = 1;
+    t[b'B' as usize] = 1;
+    t[b'C' as usize] = 1;
+    t[b'D' as usize] = 1;
+    t[b'E' as usize] = 1;
+    t[b'F' as usize] = 1;
     t
 };
 
@@ -282,13 +300,28 @@ fn scan_string_body(s: &[u8], src_len: usize) -> Result<&[u8], Error> {
         'unroll: while s.len() > 15 {
             macro_rules! check {
                 ($i:expr) => {
-                    if LUT_STR[s[$i] as usize] != 0 { s = &s[$i..]; break 'unroll; }
+                    if LUT_STR[s[$i] as usize] != 0 {
+                        s = &s[$i..];
+                        break 'unroll;
+                    }
                 };
             }
-            check!(0); check!(1); check!(2);  check!(3);
-            check!(4); check!(5); check!(6);  check!(7);
-            check!(8); check!(9); check!(10); check!(11);
-            check!(12); check!(13); check!(14); check!(15);
+            check!(0);
+            check!(1);
+            check!(2);
+            check!(3);
+            check!(4);
+            check!(5);
+            check!(6);
+            check!(7);
+            check!(8);
+            check!(9);
+            check!(10);
+            check!(11);
+            check!(12);
+            check!(13);
+            check!(14);
+            check!(15);
             s = &s[16..];
             continue;
         }
@@ -443,7 +476,9 @@ fn parse_one_value<'a>(
                     // Parse object key
                     skip_ws!(s);
                     if s[0] != b'"' {
-                        if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                        if s[0] < 0x20 {
+                            err!(ErrorCode::IllegalControlChar, s);
+                        }
                         err!(ErrorCode::UnexpectedToken, s);
                     }
                     s = &s[1..];
@@ -454,7 +489,9 @@ fn parse_one_value<'a>(
                     // Expect ':'
                     skip_ws!(s);
                     if s[0] != b':' {
-                        if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                        if s[0] < 0x20 {
+                            err!(ErrorCode::IllegalControlChar, s);
+                        }
                         err!(ErrorCode::UnexpectedToken, s);
                     }
                     s = &s[1..];
@@ -562,7 +599,9 @@ fn parse_one_value<'a>(
                             // Parse next key
                             skip_ws!(s);
                             if s[0] != b'"' {
-                                if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                                if s[0] < 0x20 {
+                                    err!(ErrorCode::IllegalControlChar, s);
+                                }
                                 err!(ErrorCode::UnexpectedToken, s);
                             }
                             s = &s[1..];
@@ -572,7 +611,9 @@ fn parse_one_value<'a>(
                             i.key_index_end = (src_len - s.len()) as isize;
                             skip_ws!(s);
                             if s[0] != b':' {
-                                if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                                if s[0] < 0x20 {
+                                    err!(ErrorCode::IllegalControlChar, s);
+                                }
                                 err!(ErrorCode::UnexpectedToken, s);
                             }
                             s = &s[1..];
@@ -587,7 +628,9 @@ fn parse_one_value<'a>(
                             continue; // check next continuation
                         }
                         _ => {
-                            if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                            if s[0] < 0x20 {
+                                err!(ErrorCode::IllegalControlChar, s);
+                            }
                             err!(ErrorCode::UnexpectedToken, s);
                         }
                     }
@@ -608,7 +651,9 @@ fn parse_one_value<'a>(
                             continue; // check next continuation
                         }
                         _ => {
-                            if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                            if s[0] < 0x20 {
+                                err!(ErrorCode::IllegalControlChar, s);
+                            }
                             err!(ErrorCode::UnexpectedToken, s);
                         }
                     }
@@ -621,9 +666,9 @@ fn parse_one_value<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::vec;
-    use alloc::string::ToString;
     use crate::ValueType;
+    use alloc::string::ToString;
+    use alloc::vec;
 
     #[test]
     fn scan_simple_values() {
@@ -655,11 +700,10 @@ mod tests {
             false
         });
         assert!(err.is_none());
-        assert_eq!(types, vec![
-            ValueType::Object,
-            ValueType::Number,
-            ValueType::String,
-        ]);
+        assert_eq!(
+            types,
+            vec![ValueType::Object, ValueType::Number, ValueType::String,]
+        );
         assert_eq!(pointers, vec!["", "/a", "/b"]);
     }
 
@@ -718,7 +762,11 @@ mod tests {
         let (rest, err) = scan_one(input, |_| false);
         assert!(err.is_none());
         // rest should be ' "hello"'
-        let trimmed = rest.iter().copied().skip_while(|b| *b == b' ').collect::<Vec<_>>();
+        let trimmed = rest
+            .iter()
+            .copied()
+            .skip_while(|b| *b == b' ')
+            .collect::<Vec<_>>();
         assert_eq!(&trimmed, b"\"hello\"");
 
         let (rest, err) = scan_one(&rest[rest.len() - trimmed.len()..], |_| false);

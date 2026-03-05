@@ -31,22 +31,19 @@
 extern crate alloc;
 
 mod error;
-mod keyescape;
 mod jsonnum;
-mod strfind;
+mod keyescape;
 mod scanner;
+mod strfind;
 mod validator;
 
 pub use error::{Error, ErrorCode};
-pub use scanner::{Iterator, Parser, scan, scan_one};
-pub use validator::{Validator, validate, validate_one, valid};
+pub use scanner::{scan, scan_one, Iterator, Parser};
+pub use validator::{valid, validate, validate_one, Validator};
 
 // Convenience re-exports for &str usage
 /// Like [`scan`], but accepts `&str` directly.
-pub fn scan_str<'a>(
-    s: &'a str,
-    f: impl FnMut(&Iterator<'a>) -> bool,
-) -> Option<Error> {
+pub fn scan_str<'a>(s: &'a str, f: impl FnMut(&Iterator<'a>) -> bool) -> Option<Error> {
     scan(s.as_bytes(), f)
 }
 

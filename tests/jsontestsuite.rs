@@ -1,4 +1,4 @@
-use jscan::{valid, validate, scan, Validator, Parser};
+use jscan::{scan, valid, validate, Parser, Validator};
 use std::fs;
 use std::path::Path;
 
@@ -45,7 +45,11 @@ fn json_test_suite() {
             let mut p = Parser::new(1024);
             let scan_err = p.scan(&content, |_| false);
             if scan_err.is_some() {
-                failures.push(format!("{}: Parser::scan() rejected: {}", name, scan_err.unwrap()));
+                failures.push(format!(
+                    "{}: Parser::scan() rejected: {}",
+                    name,
+                    scan_err.unwrap()
+                ));
                 ok = false;
             }
 
@@ -94,7 +98,10 @@ fn json_test_suite() {
 
     eprintln!(
         "JSONTestSuite: y_pass={}, n_pass={}, i_tested={}, failures={}",
-        y_pass, n_pass, i_count, failures.len()
+        y_pass,
+        n_pass,
+        i_count,
+        failures.len()
     );
 
     if !failures.is_empty() {

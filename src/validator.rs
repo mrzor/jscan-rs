@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use crate::error::{Error, ErrorCode, error_index};
+use crate::error::{error_index, Error, ErrorCode};
 use crate::jsonnum::{self, NumberResult};
 use crate::strfind;
 
@@ -40,10 +40,16 @@ impl Validator {
         }
         let (trailing, ctrl) = strfind::end_of_whitespace_seq(trailing);
         if ctrl {
-            return Some(Error::new(ErrorCode::IllegalControlChar, error_index(s.len(), trailing.len())));
+            return Some(Error::new(
+                ErrorCode::IllegalControlChar,
+                error_index(s.len(), trailing.len()),
+            ));
         }
         if !trailing.is_empty() {
-            return Some(Error::new(ErrorCode::UnexpectedToken, error_index(s.len(), trailing.len())));
+            return Some(Error::new(
+                ErrorCode::UnexpectedToken,
+                error_index(s.len(), trailing.len()),
+            ));
         }
         None
     }
@@ -99,14 +105,28 @@ const LUT_ESCAPE: [u8; 256] = {
 
 const LUT_HEX: [u8; 256] = {
     let mut t = [0u8; 256];
-    t[b'0' as usize] = 1; t[b'1' as usize] = 1; t[b'2' as usize] = 1;
-    t[b'3' as usize] = 1; t[b'4' as usize] = 1; t[b'5' as usize] = 1;
-    t[b'6' as usize] = 1; t[b'7' as usize] = 1; t[b'8' as usize] = 1;
+    t[b'0' as usize] = 1;
+    t[b'1' as usize] = 1;
+    t[b'2' as usize] = 1;
+    t[b'3' as usize] = 1;
+    t[b'4' as usize] = 1;
+    t[b'5' as usize] = 1;
+    t[b'6' as usize] = 1;
+    t[b'7' as usize] = 1;
+    t[b'8' as usize] = 1;
     t[b'9' as usize] = 1;
-    t[b'a' as usize] = 1; t[b'b' as usize] = 1; t[b'c' as usize] = 1;
-    t[b'd' as usize] = 1; t[b'e' as usize] = 1; t[b'f' as usize] = 1;
-    t[b'A' as usize] = 1; t[b'B' as usize] = 1; t[b'C' as usize] = 1;
-    t[b'D' as usize] = 1; t[b'E' as usize] = 1; t[b'F' as usize] = 1;
+    t[b'a' as usize] = 1;
+    t[b'b' as usize] = 1;
+    t[b'c' as usize] = 1;
+    t[b'd' as usize] = 1;
+    t[b'e' as usize] = 1;
+    t[b'f' as usize] = 1;
+    t[b'A' as usize] = 1;
+    t[b'B' as usize] = 1;
+    t[b'C' as usize] = 1;
+    t[b'D' as usize] = 1;
+    t[b'E' as usize] = 1;
+    t[b'F' as usize] = 1;
     t
 };
 
@@ -164,7 +184,9 @@ fn validate_inner<'a>(st: &mut Vec<u8>, s: &'a [u8]) -> (&'a [u8], Option<Error>
                     st.push(STACK_OBJECT);
                     // Parse first key
                     if s[0] != b'"' {
-                        if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                        if s[0] < 0x20 {
+                            err!(ErrorCode::IllegalControlChar, s);
+                        }
                         err!(ErrorCode::UnexpectedToken, s);
                     }
                     s = &s[1..];
@@ -174,7 +196,9 @@ fn validate_inner<'a>(st: &mut Vec<u8>, s: &'a [u8]) -> (&'a [u8], Option<Error>
                     };
                     skip_ws!(s);
                     if s[0] != b':' {
-                        if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                        if s[0] < 0x20 {
+                            err!(ErrorCode::IllegalControlChar, s);
+                        }
                         err!(ErrorCode::UnexpectedToken, s);
                     }
                     s = &s[1..];
@@ -245,7 +269,9 @@ fn validate_inner<'a>(st: &mut Vec<u8>, s: &'a [u8]) -> (&'a [u8], Option<Error>
                             s = &s[1..];
                             skip_ws!(s);
                             if s[0] != b'"' {
-                                if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                                if s[0] < 0x20 {
+                                    err!(ErrorCode::IllegalControlChar, s);
+                                }
                                 err!(ErrorCode::UnexpectedToken, s);
                             }
                             s = &s[1..];
@@ -255,7 +281,9 @@ fn validate_inner<'a>(st: &mut Vec<u8>, s: &'a [u8]) -> (&'a [u8], Option<Error>
                             };
                             skip_ws!(s);
                             if s[0] != b':' {
-                                if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                                if s[0] < 0x20 {
+                                    err!(ErrorCode::IllegalControlChar, s);
+                                }
                                 err!(ErrorCode::UnexpectedToken, s);
                             }
                             s = &s[1..];
@@ -268,7 +296,9 @@ fn validate_inner<'a>(st: &mut Vec<u8>, s: &'a [u8]) -> (&'a [u8], Option<Error>
                             continue; // check next continuation
                         }
                         _ => {
-                            if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                            if s[0] < 0x20 {
+                                err!(ErrorCode::IllegalControlChar, s);
+                            }
                             err!(ErrorCode::UnexpectedToken, s);
                         }
                     }
@@ -287,7 +317,9 @@ fn validate_inner<'a>(st: &mut Vec<u8>, s: &'a [u8]) -> (&'a [u8], Option<Error>
                             continue;
                         }
                         _ => {
-                            if s[0] < 0x20 { err!(ErrorCode::IllegalControlChar, s); }
+                            if s[0] < 0x20 {
+                                err!(ErrorCode::IllegalControlChar, s);
+                            }
                             err!(ErrorCode::UnexpectedToken, s);
                         }
                     }
@@ -307,13 +339,28 @@ fn scan_string_body(s: &[u8], src_len: usize) -> Result<&[u8], Error> {
         'unroll: while s.len() > 15 {
             macro_rules! check {
                 ($i:expr) => {
-                    if LUT_STR[s[$i] as usize] != 0 { s = &s[$i..]; break 'unroll; }
+                    if LUT_STR[s[$i] as usize] != 0 {
+                        s = &s[$i..];
+                        break 'unroll;
+                    }
                 };
             }
-            check!(0); check!(1); check!(2);  check!(3);
-            check!(4); check!(5); check!(6);  check!(7);
-            check!(8); check!(9); check!(10); check!(11);
-            check!(12); check!(13); check!(14); check!(15);
+            check!(0);
+            check!(1);
+            check!(2);
+            check!(3);
+            check!(4);
+            check!(5);
+            check!(6);
+            check!(7);
+            check!(8);
+            check!(9);
+            check!(10);
+            check!(11);
+            check!(12);
+            check!(13);
+            check!(14);
+            check!(15);
             s = &s[16..];
             continue;
         }
@@ -362,9 +409,20 @@ mod tests {
     #[test]
     fn valid_values() {
         for input in &[
-            r#"null"#, r#"true"#, r#"false"#, r#"0"#, r#"-123"#, r#"1.5e10"#,
-            r#""""#, r#""hello""#, r#""esc\n\t\\""#, r#""unicode\u00Af""#,
-            r#"{}"#, r#"[]"#, r#"{"a":1}"#, r#"[1,2,3]"#,
+            r#"null"#,
+            r#"true"#,
+            r#"false"#,
+            r#"0"#,
+            r#"-123"#,
+            r#"1.5e10"#,
+            r#""""#,
+            r#""hello""#,
+            r#""esc\n\t\\""#,
+            r#""unicode\u00Af""#,
+            r#"{}"#,
+            r#"[]"#,
+            r#"{"a":1}"#,
+            r#"[1,2,3]"#,
             r#"{"a":{"b":[1,true,null,"x"]}}"#,
             r#"  { "key" : "value" }  "#,
         ] {
@@ -375,8 +433,16 @@ mod tests {
     #[test]
     fn invalid_values() {
         for input in &[
-            r#""#, r#"{"#, r#"[1,]"#, r#"{"a"}"#, r#"nul"#, r#"tru"#,
-            r#"fals"#, r#"1."#, r#""\x""#, r#"{"a":1} {"b":2}"#,
+            r#""#,
+            r#"{"#,
+            r#"[1,]"#,
+            r#"{"a"}"#,
+            r#"nul"#,
+            r#"tru"#,
+            r#"fals"#,
+            r#"1."#,
+            r#""\x""#,
+            r#"{"a":1} {"b":2}"#,
         ] {
             assert!(!valid(input.as_bytes()), "should be invalid: {}", input);
         }

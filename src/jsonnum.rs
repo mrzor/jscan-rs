@@ -62,8 +62,14 @@ pub(crate) fn read_number(s: &[u8]) -> (&[u8], NumberResult) {
                 }
             };
         }
-        check_int!(0); check_int!(1); check_int!(2); check_int!(3);
-        check_int!(4); check_int!(5); check_int!(6); check_int!(7);
+        check_int!(0);
+        check_int!(1);
+        check_int!(2);
+        check_int!(3);
+        check_int!(4);
+        check_int!(5);
+        check_int!(6);
+        check_int!(7);
         s = &s[8..];
     }
     // Fallback for remaining bytes
@@ -104,8 +110,14 @@ fn read_fraction(s: &[u8]) -> (&[u8], NumberResult) {
                 }
             };
         }
-        check_frac!(0); check_frac!(1); check_frac!(2); check_frac!(3);
-        check_frac!(4); check_frac!(5); check_frac!(6); check_frac!(7);
+        check_frac!(0);
+        check_frac!(1);
+        check_frac!(2);
+        check_frac!(3);
+        check_frac!(4);
+        check_frac!(5);
+        check_frac!(6);
+        check_frac!(7);
         s = &s[8..];
     }
     // Fallback for remaining bytes
@@ -146,8 +158,14 @@ fn read_exponent(s: &[u8]) -> (&[u8], NumberResult) {
                 }
             };
         }
-        check_exp!(0); check_exp!(1); check_exp!(2); check_exp!(3);
-        check_exp!(4); check_exp!(5); check_exp!(6); check_exp!(7);
+        check_exp!(0);
+        check_exp!(1);
+        check_exp!(2);
+        check_exp!(3);
+        check_exp!(4);
+        check_exp!(5);
+        check_exp!(6);
+        check_exp!(7);
         s = &s[8..];
     }
     // Fallback for remaining bytes
@@ -194,20 +212,35 @@ mod tests {
     #[test]
     fn test_long_integer() {
         // Test the 8-way unrolled path with > 8 digits
-        assert_eq!(read_number(b"1234567890 "), (&b" "[..], NumberResult::Integer));
-        assert_eq!(read_number(b"12345678901234567890 "), (&b" "[..], NumberResult::Integer));
+        assert_eq!(
+            read_number(b"1234567890 "),
+            (&b" "[..], NumberResult::Integer)
+        );
+        assert_eq!(
+            read_number(b"12345678901234567890 "),
+            (&b" "[..], NumberResult::Integer)
+        );
     }
 
     #[test]
     fn test_long_fraction() {
         // Test unrolled fraction path
-        assert_eq!(read_number(b"1.1234567890 "), (&b" "[..], NumberResult::Number));
-        assert_eq!(read_number(b"1.12345678e5 "), (&b" "[..], NumberResult::Number));
+        assert_eq!(
+            read_number(b"1.1234567890 "),
+            (&b" "[..], NumberResult::Number)
+        );
+        assert_eq!(
+            read_number(b"1.12345678e5 "),
+            (&b" "[..], NumberResult::Number)
+        );
     }
 
     #[test]
     fn test_long_exponent() {
         // Test unrolled exponent path
-        assert_eq!(read_number(b"1e1234567890 "), (&b" "[..], NumberResult::Number));
+        assert_eq!(
+            read_number(b"1e1234567890 "),
+            (&b" "[..], NumberResult::Number)
+        );
     }
 }

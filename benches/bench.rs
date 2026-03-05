@@ -9,7 +9,8 @@ use jscan::{scan, valid, Parser, Validator, ValueType};
 fn load_test_data(name: &str) -> Vec<u8> {
     let path = Path::new("testdata").join(name);
     if name.ends_with(".gz") {
-        let compressed = fs::read(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e));
+        let compressed =
+            fs::read(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e));
         let mut decoder = GzDecoder::new(&compressed[..]);
         let mut data = Vec::new();
         decoder.read_to_end(&mut data).unwrap();
