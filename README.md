@@ -87,10 +87,6 @@ Inside the callback, the `Iterator` provides:
 | `key_index_end()` | `isize` | Byte offset of key end, or -1 |
 | `write_pointer(&mut buf)` | — | Write pointer to a reusable buffer (avoids alloc) |
 
-## Status
-
-Early stage. The core scan and validate logic is complete and tested (21 tests pass including a full reproduction of the Go library's example output). See [NEXT-STEPS.md](NEXT-STEPS.md) for the roadmap.
-
 ## License
 
 MIT — same as the original Go library.
